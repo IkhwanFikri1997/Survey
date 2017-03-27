@@ -372,17 +372,14 @@ public class SurveyGUI extends javax.swing.JFrame {
 
         surveyTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+
             },
             new String [] {
                 "Question", "Type", "Choice 1", "Choice 2", "Choice 3", "Choice 4"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                true, true, true, true, true, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -517,17 +514,32 @@ public class SurveyGUI extends javax.swing.JFrame {
 
     private void nextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextActionPerformed
         //save question to table
+        if(surveyTable.getRowCount()==3){
+            saveSurvey.setEnabled(true);
+        }
+        
         String nQuestion = question.getText();
         int type = typeBox.getSelectedIndex();
+        String[] tp = {"null", "check","text","radio"};
         String ch1 = c1.getText();
         String ch2 = c2.getText();
         String ch3 = c3.getText();
         String ch4 = c4.getText();
         
-        
+        dtm = (DefaultTableModel) surveyTable.getModel();
+        if(type==2){
+            dtm.addRow(new Object[]{nQuestion, tp[type]});
+        }
+        else{
+            dtm.addRow(new Object[]{nQuestion, tp[type],ch1,ch2,ch3,ch4});
+        }
         
         // make more questions
         question.setText("");
+        c1.setText("");
+        c2.setText("");
+        c3.setText("");
+        c4.setText("");
         startPoint();
     }//GEN-LAST:event_nextActionPerformed
 
