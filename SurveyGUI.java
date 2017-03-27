@@ -6,8 +6,14 @@
 package surveyapp;
 
 import java.awt.Component;
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import javax.swing.ButtonGroup;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -15,7 +21,10 @@ import javax.swing.JOptionPane;
  */
 public class SurveyGUI extends javax.swing.JFrame {
 
-    public static int questionNum=1;
+    DefaultTableModel dtm = new DefaultTableModel();
+    Connection con;
+    Statement stm;
+    ResultSet rs;
     
     /**
      * Creates new form SurveyGUI
@@ -25,13 +34,8 @@ public class SurveyGUI extends javax.swing.JFrame {
         fillCombo();
         groupButton();
         startPoint();
-        question.setText("Question "+questionNum);
-        
-        // limit question up to 10
-        if(questionNum>10){next.setVisible(false);}
-        
-        // limit survey at least 3 questions
-        if(questionNum>=3){saveSurvey.setEnabled(true);}
+        link();
+        question.setText("Question");
         
     }
     
@@ -42,6 +46,19 @@ public class SurveyGUI extends javax.swing.JFrame {
         bg1.add(jRadioButton2);
         bg1.add(jRadioButton3);
         bg1.add(jRadioButton4);
+    }
+    
+    public void link(){
+        String url = "jdbc:mysql://localhost:3306/survey?zeroDateTimeBehavior=convertToNull";
+        String name = "root";
+        String pswd = "";
+        
+        try{
+            con = DriverManager.getConnection(url, name, pswd);
+            stm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            String query = "select * from `survey data`";
+            rs = stm.executeQuery(query);
+        }catch(SQLException e){JOptionPane.showMessageDialog(this, e);}
     }
     
     public void startPoint(){
@@ -93,7 +110,7 @@ public class SurveyGUI extends javax.swing.JFrame {
         saveSurvey = new javax.swing.JButton();
         set = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        surveyTable = new javax.swing.JTable();
 
         jLabel2.setText("jLabel2");
 
@@ -238,7 +255,12 @@ public class SurveyGUI extends javax.swing.JFrame {
 
         motherPanel.setLayout(new java.awt.CardLayout());
 
-        question.setText("Question 1");
+        question.setText("Question");
+        question.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                questionActionPerformed(evt);
+            }
+        });
 
         c2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -348,7 +370,7 @@ public class SurveyGUI extends javax.swing.JFrame {
                     .addContainerGap(243, Short.MAX_VALUE)))
         );
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        surveyTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null},
                 {null, null, null, null, null, null},
@@ -356,7 +378,7 @@ public class SurveyGUI extends javax.swing.JFrame {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "Question", "Answer Type", "Choice 1", "Choice 2", "Choice 3", "Choice 4"
+                "Question", "Type", "Choice 1", "Choice 2", "Choice 3", "Choice 4"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -367,7 +389,7 @@ public class SurveyGUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(surveyTable);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -494,11 +516,19 @@ public class SurveyGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_typeBoxPopupMenuWillBecomeInvisible
 
     private void nextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextActionPerformed
+        //save question to table
+        String nQuestion = question.getText();
+        int type = typeBox.getSelectedIndex();
+        String ch1 = c1.getText();
+        String ch2 = c2.getText();
+        String ch3 = c3.getText();
+        String ch4 = c4.getText();
+        
+        
+        
         // make more questions
-        questionNum+=1;
-        SurveyGUI moreQuestion = new SurveyGUI();
-        this.setVisible(false);
-        moreQuestion.setVisible(true);
+        question.setText("");
+        startPoint();
     }//GEN-LAST:event_nextActionPerformed
 
     private void saveSurveyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveSurveyActionPerformed
@@ -512,6 +542,10 @@ public class SurveyGUI extends javax.swing.JFrame {
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox1ActionPerformed
+
+    private void questionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_questionActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_questionActionPerformed
 
     /**
      * @param args the command line arguments
@@ -568,7 +602,6 @@ public class SurveyGUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JPanel motherPanel;
     private javax.swing.JButton next;
@@ -576,6 +609,7 @@ public class SurveyGUI extends javax.swing.JFrame {
     private javax.swing.JPanel radioPanel;
     private javax.swing.JButton saveSurvey;
     private javax.swing.JButton set;
+    private javax.swing.JTable surveyTable;
     private javax.swing.JPanel textPanel;
     private javax.swing.JComboBox<String> typeBox;
     // End of variables declaration//GEN-END:variables
