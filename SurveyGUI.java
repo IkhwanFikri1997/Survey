@@ -25,7 +25,8 @@ public class SurveyGUI extends javax.swing.JFrame {
     Connection con;
     Statement stm;
     ResultSet rs;
-    
+    public int qNum=1;
+    public String title;
     /**
      * Creates new form SurveyGUI
      */
@@ -35,7 +36,7 @@ public class SurveyGUI extends javax.swing.JFrame {
         groupButton();
         startPoint();
         link();
-        question.setText("Question");
+        questionBox.setText("Question");
         
     }
     
@@ -56,21 +57,54 @@ public class SurveyGUI extends javax.swing.JFrame {
         try{
             con = DriverManager.getConnection(url, name, pswd);
             stm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            String query = "select * from `survey data`";
-            rs = stm.executeQuery(query);
         }catch(SQLException e){JOptionPane.showMessageDialog(this, e);}
+    }
+    
+    public void makeTable() throws SQLException{
+        //make new table
+        title = surveyTitle.getText();
+        
+        String query = "create table `"+title+"`("
+                           +"question varchar(255),"
+                           +"type int(4),"
+                           +"choice1 varchar(255),"
+                           +"choice2 varchar(255),"
+                           +"choice3 varchar(255),"
+                           +"choice4 varchar(255));";
+        
+        stm.executeUpdate(query);
+        JOptionPane.showMessageDialog(this, "table made");
+        
+        //select from new table
+        String sql = "select * from `"+surveyTitle.getText()+"`";
+        rs = stm.executeQuery(sql);
+        rs.first();
     }
     
     public void startPoint(){
         motherPanel.removeAll();
         choicePanel.setVisible(false);
+        
+        jLabel2.setText("Question "+qNum);
+        jLabel3.setText("Question "+qNum);
+        jLabel4.setText("Question "+qNum);
+        
+        jCheckBox1.setText("choice 1");
+        jCheckBox2.setText("choice 2");
+        jCheckBox3.setText("choice 3");
+        jCheckBox4.setText("choice 4");
+        
+        jRadioButton1.setText("choice 1");
+        jRadioButton2.setText("choice 2");
+        jRadioButton3.setText("choice 3");
+        jRadioButton4.setText("choice 4");
     }
 
     public void fillCombo(){
         // fill combo box
-        typeBox.addItem("Checkbox");
-        typeBox.addItem("Textbox");
-        typeBox.addItem("Radio Button");
+        typeBox.addItem("1. Checkbox");
+        typeBox.addItem("2. Textbox");
+        typeBox.addItem("3. Radio Button");
     }
     
     /**
@@ -100,7 +134,7 @@ public class SurveyGUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         typeBox = new javax.swing.JComboBox<>();
         motherPanel = new javax.swing.JPanel();
-        question = new javax.swing.JTextField();
+        questionBox = new javax.swing.JTextField();
         choicePanel = new javax.swing.JPanel();
         c1 = new javax.swing.JTextField();
         c2 = new javax.swing.JTextField();
@@ -109,8 +143,11 @@ public class SurveyGUI extends javax.swing.JFrame {
         next = new javax.swing.JButton();
         saveSurvey = new javax.swing.JButton();
         set = new javax.swing.JButton();
+        surveyTitle = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
         surveyTable = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
 
         jLabel2.setText("jLabel2");
 
@@ -237,6 +274,7 @@ public class SurveyGUI extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        typeBox.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         typeBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select type" }));
         typeBox.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
             public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
@@ -255,10 +293,10 @@ public class SurveyGUI extends javax.swing.JFrame {
 
         motherPanel.setLayout(new java.awt.CardLayout());
 
-        question.setText("Question");
-        question.addActionListener(new java.awt.event.ActionListener() {
+        questionBox.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        questionBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                questionActionPerformed(evt);
+                questionBoxActionPerformed(evt);
             }
         });
 
@@ -319,6 +357,33 @@ public class SurveyGUI extends javax.swing.JFrame {
             }
         });
 
+        surveyTitle.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
+
+        surveyTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Question", "Type", "Choice 1", "Choice 2", "Choice 3", "Choice 4"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                true, true, true, true, true, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        surveyTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane2.setViewportView(surveyTable);
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
+        jLabel1.setText("Title");
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabel5.setText("Question");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -330,63 +395,63 @@ public class SurveyGUI extends javax.swing.JFrame {
                         .addComponent(set)
                         .addGap(185, 185, 185)
                         .addComponent(next)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
-                        .addComponent(saveSurvey))
+                        .addGap(18, 18, 18)
+                        .addComponent(saveSurvey)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(typeBox, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(question, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(choicePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(156, Short.MAX_VALUE))))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(choicePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(typeBox, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(42, 42, 42)
+                                .addComponent(surveyTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(questionBox, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 873, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(motherPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(70, Short.MAX_VALUE)))
+                    .addComponent(motherPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(987, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 541, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 25, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(surveyTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(typeBox, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(questionBox)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(choicePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(next)
                             .addComponent(saveSurvey)
-                            .addComponent(set)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(typeBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(question, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 279, Short.MAX_VALUE)
-                        .addComponent(choicePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(57, 57, 57)))
+                            .addComponent(set))))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(102, 102, 102)
-                    .addComponent(motherPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(243, Short.MAX_VALUE)))
+                    .addGap(161, 161, 161)
+                    .addComponent(motherPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(220, Short.MAX_VALUE)))
         );
-
-        surveyTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Question", "Type", "Choice 1", "Choice 2", "Choice 3", "Choice 4"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane2.setViewportView(surveyTable);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -395,64 +460,65 @@ public class SurveyGUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void setActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setActionPerformed
-        // set choices
-        int sel = typeBox.getSelectedIndex();
-        next.setEnabled(true);
+        // validation
+        if(jCheckBox1.getText().equals("") || jCheckBox2.getText().equals("")){
+            JOptionPane.showMessageDialog(this, "the 2 top choices must be filled");
+        }
         
-        // apply choices based on combobox index
-        switch(sel){
-            case 1 : 
-            jLabel3.setText(question.getText());
-            jCheckBox1.setText(c1.getText());
-            jCheckBox2.setText(c2.getText());
-            jCheckBox3.setText(c3.getText());
-            if(c3.getText().equals("")){
-                jCheckBox3.setVisible(false);
+        // set choices
+        else{
+            int sel = typeBox.getSelectedIndex();
+            next.setEnabled(true);
+
+            // apply choices based on combobox index
+            switch(sel){
+                case 1 : 
+                jLabel3.setText(questionBox.getText());
+                jCheckBox1.setText(c1.getText());
+                jCheckBox2.setText(c2.getText());
+                jCheckBox3.setText(c3.getText());
+                if(c3.getText().equals("")){
+                    jCheckBox3.setVisible(false);
+                }
+                else{jCheckBox3.setVisible(true);}
+                jCheckBox4.setText(c4.getText());
+
+                if(c4.getText().equals("")){
+                    jCheckBox4.setVisible(false);
+                }
+                else{jCheckBox4.setVisible(true);}
+                break;
+                case 2 :
+                jLabel4.setText(questionBox.getText());
+                break;
+                case 3 :
+                jLabel2.setText(questionBox.getText());
+                jRadioButton1.setText(c1.getText());
+                jRadioButton2.setText(c2.getText());
+                jRadioButton3.setText(c3.getText());
+                if(c3.getText().equals("")){
+                    jRadioButton3.setVisible(false);
+                }
+                else{jRadioButton3.setVisible(true);}
+
+                jRadioButton4.setText(c4.getText());
+                if(c4.getText().equals("")){
+                    jRadioButton4.setVisible(false);
+                }
+                else{jRadioButton4.setVisible(true);}
+                break;
             }
-            else{jCheckBox3.setVisible(true);}
-            jCheckBox4.setText(c4.getText());
-            
-            if(c4.getText().equals("")){
-                jCheckBox4.setVisible(false);
-            }
-            else{jCheckBox4.setVisible(true);}
-            break;
-            case 2 :
-            jLabel4.setText(question.getText());
-            break;
-            case 3 :
-            jLabel2.setText(question.getText());
-            jRadioButton1.setText(c1.getText());
-            jRadioButton2.setText(c2.getText());
-            jRadioButton3.setText(c3.getText());
-            if(c3.getText().equals("")){
-                jRadioButton3.setVisible(false);
-            }
-            else{jRadioButton3.setVisible(true);}
-            
-            jRadioButton4.setText(c4.getText());
-            if(c4.getText().equals("")){
-                jRadioButton4.setVisible(false);
-            }
-            else{jRadioButton4.setVisible(true);}
-            break;
         }
     }//GEN-LAST:event_setActionPerformed
 
@@ -497,7 +563,6 @@ public class SurveyGUI extends javax.swing.JFrame {
             motherPanel.repaint();
             motherPanel.revalidate();
             choicePanel.setVisible(false);
-            next.setEnabled(true);
             set.setEnabled(true);
             break;
             //enable radio
@@ -513,14 +578,19 @@ public class SurveyGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_typeBoxPopupMenuWillBecomeInvisible
 
     private void nextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextActionPerformed
-        //save question to table
-        if(surveyTable.getRowCount()==3){
+        //minimum survey limit 3 questions
+        qNum+=1;
+        next.setEnabled(false);
+        if(surveyTable.getRowCount()>=2){
             saveSurvey.setEnabled(true);
         }
         
-        String nQuestion = question.getText();
+        //save question to table
+        String nQuestion = questionBox.getText();
+        
         int type = typeBox.getSelectedIndex();
-        String[] tp = {"null", "check","text","radio"};
+        // 0=null 1=check 2=text 3=radio
+        
         String ch1 = c1.getText();
         String ch2 = c2.getText();
         String ch3 = c3.getText();
@@ -528,23 +598,50 @@ public class SurveyGUI extends javax.swing.JFrame {
         
         dtm = (DefaultTableModel) surveyTable.getModel();
         if(type==2){
-            dtm.addRow(new Object[]{nQuestion, tp[type]});
+            dtm.addRow(new Object[]{nQuestion, type});
         }
         else{
-            dtm.addRow(new Object[]{nQuestion, tp[type],ch1,ch2,ch3,ch4});
+            dtm.addRow(new Object[]{nQuestion, type,ch1,ch2,ch3,ch4});
         }
         
         // make more questions
-        question.setText("");
+        questionBox.setText("Question");
         c1.setText("");
         c2.setText("");
         c3.setText("");
         c4.setText("");
+        typeBox.setSelectedIndex(0);
+
         startPoint();
     }//GEN-LAST:event_nextActionPerformed
 
     private void saveSurveyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveSurveyActionPerformed
-        // TODO add your handling code here:
+        //save survey to database
+        int row = surveyTable.getRowCount();
+        
+        try{
+        makeTable();
+        //JOptionPane.showMessageDialog(this, "insertion");
+        
+        for(int i=0; i<row; i++){
+            String name = (String)surveyTable.getValueAt(i, 0);
+            int type = (int)surveyTable.getValueAt(i, 1);
+            String choice1 = (String)surveyTable.getValueAt(i, 2);
+            String choice2 = (String)surveyTable.getValueAt(i, 3);
+            String choice3 = (String)surveyTable.getValueAt(i, 4);
+            String choice4 = (String)surveyTable.getValueAt(i, 5);
+            
+            if(type>3 || type<=0){
+                JOptionPane.showMessageDialog(this, "Invalid type");
+            }
+            else{
+                stm.executeUpdate("insert into `" +title+ "` values('"+name+"'," +type+ ",'"+choice1+"'," +"'"+choice2+"'," +"'"+choice3+"'," +"'"+choice4+"')");
+                JOptionPane.showMessageDialog(this, "Save successful");
+            }
+        }
+        startPoint();
+        link();
+        }catch(SQLException e){JOptionPane.showMessageDialog(this, e);}
     }//GEN-LAST:event_saveSurveyActionPerformed
 
     private void jRadioButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton4ActionPerformed
@@ -555,9 +652,9 @@ public class SurveyGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
-    private void questionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_questionActionPerformed
+    private void questionBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_questionBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_questionActionPerformed
+    }//GEN-LAST:event_questionBoxActionPerformed
 
     /**
      * @param args the command line arguments
@@ -605,9 +702,11 @@ public class SurveyGUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JCheckBox jCheckBox4;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
@@ -617,11 +716,12 @@ public class SurveyGUI extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JPanel motherPanel;
     private javax.swing.JButton next;
-    private javax.swing.JTextField question;
+    private javax.swing.JTextField questionBox;
     private javax.swing.JPanel radioPanel;
     private javax.swing.JButton saveSurvey;
     private javax.swing.JButton set;
     private javax.swing.JTable surveyTable;
+    private javax.swing.JTextField surveyTitle;
     private javax.swing.JPanel textPanel;
     private javax.swing.JComboBox<String> typeBox;
     // End of variables declaration//GEN-END:variables
